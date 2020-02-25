@@ -1,0 +1,59 @@
+Algorithme code Pretzel :
+1)	Setup :
+Mise en place des pins des LED 
+Mise en place de la communication série
+Essaie de connexion à un réseau Wifi
+|Si ok : affichage de l’IP du Pretzel
+|Sinon : LED rouge allumé et verte qui clignote (on reste bloqué)
+Ouverture du port UDP
+| Si ok : on continue
+| Sinon : LED rouge allumé et verte qui clignote (on reste bloqué)
+
+Demande de réponse à l’adresse testée (recherche des modules I2C connectés)
+|Si réponse : Enregistrement de l’adresse
+|Sinon : Test de l’adresse suivante
+Si aucun esclave détecté : LED verte allumé et rouge qui clignote (on reste bloqué)
+Allumage des LEDs verte et rouge pendant 0.4s (fin de l’initialisation)
+2)	Boucle :
+Si le Pretzel reçoit une trame Openmodbus
+|Si la trame fait une la bonne taille
+||Si le code fonction est une lecture
+|||fonction : lecture
+||Sinon si le code fonction est une écriture
+|||fonction : écriture
+||Sinon
+|||Renvoie trame d’erreur code fonction
+
+Fonction lecture :
+Si l’adresse demandée existe
+|Demande de lecture à cette adresse
+|Allumage LED lecture
+|Si réponse
+||lecture de cette valeur
+||Renvoie de cette valeur par openmodbus
+|Sinon
+||Renvoie trame d'erreur réponse I2C
+|Extinction LED Lecture
+Sinon
+| Renvoie trame d'erreur adresse
+
+
+
+
+Fonction écriture :
+Si l’adresse demandée existe
+| Si la valeur à écrire est <255
+| | Allumage LED Ecriture
+| |On commence la communication I2C
+| |On fait un OU logique entre la valeur à écrire et un masque (pour forcer les bits de gauches à 1)
+| |Envoie de la valeur
+| | Si réponse I2C
+| | |Renvoie de la trame I2C (la même que celle reçu)
+| | Sinon
+| | | Renvoie trame d'erreur pas de réponse esclave I2C
+| | Extinction LED Ecriture
+| Sinon 
+| | Renvoie trame d'erreur valeur
+Sinon
+| Renvoie trame d'erreur adresse
+
